@@ -361,7 +361,12 @@ export default function App() {
     if (!catalogo || cnaes.length === 0) return ''
     if (cnaes.length === 1) return nomeCurto(catalogo.porCodigo.get(cnaes[0])?.descricao ?? cnaes[0])
     if (d && cnaes.length === d.total && cnaes.every((c) => c.startsWith(d.codigo))) return nomeCurto(d.descricao)
-    if (cnaes.length <= 3) return listaPorExtenso(cnaes.map((c) => nomeCurto(catalogo.porCodigo.get(c)?.descricao ?? c)))
+    if (cnaes.length <= 3) {
+      // Nomes oficiais longos viram uma frase ilegivel no titulo; a lista
+      // completa ja esta na etapa 2.
+      const frase = listaPorExtenso(cnaes.map((c) => nomeCurto(catalogo.porCodigo.get(c)?.descricao ?? c)))
+      if (frase.length <= 48 && !frase.includes('…')) return frase
+    }
     return `${cnaes.length} atividades`
   })()
 

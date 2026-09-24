@@ -12,7 +12,14 @@
 </p>
 
 <p align="center">
-  <img src="docs/imagens/radar.png" alt="Radar da Fonteca: mapa do Brasil com os estados acesos pela quantidade de empresas encontradas" width="820" />
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licen%C3%A7a-MIT-3b82f6" alt="Licença MIT" /></a>
+  <a href="https://github.com/magoautomacoes/fonteca/actions/workflows/ci.yml"><img src="https://github.com/magoautomacoes/fonteca/actions/workflows/ci.yml/badge.svg" alt="CI" /></a>
+  <img src="https://img.shields.io/badge/auto--hospedado-Docker-22d3ee" alt="Auto-hospedado com Docker" />
+  <img src="https://img.shields.io/badge/dados-Receita%20Federal-0b1b3a" alt="Dados da Receita Federal" />
+</p>
+
+<p align="center">
+  <img src="docs/imagens/radar.gif" alt="O radar da Fonteca varrendo o mapa do Brasil e acendendo os estados com empresas recém-abertas" width="860" />
 </p>
 
 ---
@@ -26,23 +33,74 @@ A Fonteca faz esse trabalho na sua máquina ou na sua VM: baixa os arquivos,
 organiza num Postgres e entrega uma tela e uma API para você achar quem acabou
 de abrir no seu ramo, com celular para chamar no WhatsApp.
 
+Nada sai da sua máquina: não há conta, cadastro nem servidor de terceiros.
+
+## Como funciona
+
+### 1. Escolha o ramo
+
+Busque entre as 1.332 atividades oficiais da CNAE (IBGE), pelo nome ou por
+termos populares: "padaria", "oficina", "salão de beleza". Ou comece por um
+dos ramos mais procurados.
+
+<p align="center">
+  <img src="docs/imagens/busca.png" alt="Busca por ramo: digitando padaria, a Fonteca sugere as atividades de padaria e confeitaria da CNAE" width="820" />
+</p>
+
+### 2. Ajuste as atividades
+
+O ramo abre em árvore, grupo por grupo, com tudo marcado. Desmarque o que não
+interessa; o código CNAE de cada atividade fica à vista.
+
+<p align="center">
+  <img src="docs/imagens/atividades.png" alt="Árvore de atividades do ramo de alimentação, com restaurantes, lanchonetes, bares e bufês marcados" width="820" />
+</p>
+
+### 3. Ligue o radar
+
+O mapa mostra onde estão as empresas do filtro, estado por estado. Clique no
+mapa ou numa região para filtrar, e escolha desde quando (30, 90, 180 dias ou
+um ano), a situação cadastral, só com celular e sem MEI.
+
+<p align="center">
+  <img src="docs/imagens/radar.png" alt="Radar com o Sudeste selecionado: SP, MG, RJ e ES acesos, e a contagem de empresas por estado" width="820" />
+</p>
+
+### 4. Aborde e exporte
+
+A lista vem com o que importa para a primeira conversa: nome, CNPJ, atividade,
+cidade e há quanto tempo a empresa abriu. O botão de WhatsApp já monta o número
+(a Receita guarda o celular sem o nono dígito; a Fonteca restaura), e a
+exportação gera uma planilha que o Excel em português abre direto.
+
+<p align="center">
+  <img src="docs/imagens/lista.png" alt="Lista de restaurantes e lanchonetes abertos em São Paulo, com WhatsApp, e-mail, atividade, data de abertura e cidade" width="820" />
+</p>
+
+### Tema claro e celular
+
+<table>
+  <tr>
+    <td width="62%"><img src="docs/imagens/radar-claro.png" alt="Radar no tema claro" /></td>
+    <td width="19%"><img src="docs/imagens/celular-radar.png" alt="Radar no celular" /></td>
+    <td width="19%"><img src="docs/imagens/celular-lista.png" alt="Lista de empresas no celular" /></td>
+  </tr>
+</table>
+
+As imagens usam o **modo demonstração**, com empresas e contatos fictícios, que
+já vem na instalação para você conhecer a ferramenta antes de baixar os dados.
+
 ## O que ela faz
 
-- **Busca por ramo.** As 1.332 atividades oficiais da CNAE (IBGE), com busca por
-  texto e por termos populares: "padaria", "oficina", "salão de beleza".
-- **Radar por estado.** O mapa do Brasil mostra onde estão as empresas do
-  filtro; clique no estado para filtrar.
-- **Filtros de prospecção.** Abertas nos últimos 30, 90, 180 ou 365 dias,
-  situação cadastral, só com celular, sem MEI.
-- **Pronto para agir.** Botão de WhatsApp com o número já montado (a Receita
-  guarda o celular sem o nono dígito; a Fonteca restaura), e exportação para
-  planilha que o Excel em português abre direto.
+- **Busca por ramo** nas 1.332 atividades oficiais da CNAE, por texto ou código.
+- **Radar por estado**, com a contagem exata de empresas em cada UF.
+- **Filtros de prospecção**: período de abertura, situação cadastral, só com
+  celular, sem MEI.
+- **Pronto para agir**: WhatsApp com o número montado e planilha para o Excel.
 - **API REST** com chave, limite de uso e isolamento entre contas, para ligar
   no seu CRM ou automação.
-- **Modo demonstração**, com empresas fictícias, para conhecer a ferramenta
-  antes de baixar os dados.
-
-Nada sai da sua máquina: não há conta, cadastro nem servidor de terceiros.
+- **Atualização mensal** automática com um cron, sem derrubar a consulta
+  durante a carga.
 
 ## Instalar
 
@@ -74,6 +132,20 @@ docker compose run --rm cli ingest
 
 O passo a passo completo, incluindo VM com HTTPS, requisitos de máquina e
 atualização mensal, está em **[docs/instalacao.md](docs/instalacao.md)**.
+
+## API
+
+```bash
+curl -s http://localhost:8080/v1/cnpj/pesquisa \
+  -H 'api-key: fnt_live_...' \
+  -H 'content-type: application/json' \
+  -d '{"codigo_atividade_principal": ["5611201"], "uf": ["SP"],
+       "data_abertura": {"ultimos_dias": 90},
+       "mais_filtros": {"somente_celular": true}}'
+```
+
+Pesquisa paginada, contagem por estado, detalhe de CNPJ e consumo da conta.
+Veja **[docs/api.md](docs/api.md)**.
 
 ## Documentação
 
