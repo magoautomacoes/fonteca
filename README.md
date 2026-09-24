@@ -180,6 +180,7 @@ apoiar é conhecer os cursos e acompanhar o conteúdo:
 | **The Wizard Academy** | [thewizardacademy.com.br](https://thewizardacademy.com.br) |
 | **Instagram** | [@magoautomacoes](https://www.instagram.com/magoautomacoes/) |
 | **YouTube** | [@wizardacademy_ia](https://www.youtube.com/@wizardacademy_ia) |
+| **LinkedIn** | [joao-vitor-souza-santos-ia](https://www.linkedin.com/in/joao-vitor-souza-santos-ia/) |
 
 Dar uma estrela ⭐ no repositório também ajuda outras pessoas a encontrarem o
 projeto.
