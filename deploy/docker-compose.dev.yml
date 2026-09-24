@@ -1,0 +1,31 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: fonteca-pg-dev
+    environment:
+      POSTGRES_DB: fonteca
+      POSTGRES_USER: fonteca
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?defina POSTGRES_PASSWORD no .env}
+    ports:
+      - "5433:5432"
+    volumes:
+      - fonteca_pg_dev:/var/lib/postgresql/data
+    command:
+      - postgres
+      - -c
+      - shared_buffers=512MB
+      - -c
+      - maintenance_work_mem=256MB
+      - -c
+      - work_mem=32MB
+    healthcheck:
+      # Por TCP, nao pelo socket: na primeira inicializacao o Postgres sobe um
+      # servidor temporario so no socket, e pg_isready sem -h o declararia pronto
+      # antes da hora ("the database system is starting up").
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U fonteca -d fonteca"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  fonteca_pg_dev:

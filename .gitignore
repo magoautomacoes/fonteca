@@ -1,0 +1,8 @@
+.env
+*.zip
+*.csv
+node_modules/
+dist/
+/fonteca
+/fonteca.exe
+/tmp/

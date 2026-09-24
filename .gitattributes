@@ -1,0 +1,4 @@
+# LF em tudo: scripts .sh, Dockerfile e Caddyfile quebram com CRLF no Linux.
+* text=auto eol=lf
+*.png binary
+*.woff2 binary

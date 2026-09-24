@@ -1,0 +1,105 @@
+# Fonteca auto-hospedada. Instale com scripts/instalar.sh (Linux, macOS, VM)
+# ou scripts/instalar.ps1 (Windows); eles criam o .env e preparam o banco.
+#
+#   docker compose up -d                                  sobe banco, API e tela
+#   docker compose run --rm cli ingest -cnae 5611201      carrega dados da Receita
+#   docker compose run --rm cli conta -nome "Outra"       emite outra chave de API
+
+name: fonteca
+
+services:
+  db:
+    image: postgres:17-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: fonteca
+      POSTGRES_USER: fonteca
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?rode scripts/instalar para criar o .env}
+    command:
+      - postgres
+      - -c
+      - shared_buffers=${PG_SHARED_BUFFERS:-512MB}
+      - -c
+      - maintenance_work_mem=${PG_MAINTENANCE_WORK_MEM:-256MB}
+      - -c
+      - work_mem=32MB
+    volumes:
+      - banco:/var/lib/postgresql/data
+    healthcheck:
+      # Por TCP, nao pelo socket: na primeira inicializacao o Postgres sobe um
+      # servidor temporario so no socket, e pg_isready sem -h o declararia pronto
+      # antes da hora ("the database system is starting up").
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U fonteca -d fonteca"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    # Sem "ports": o banco so e alcancavel pela rede interna.
+    networks: [interna]
+
+  api:
+    build: { context: ., target: fonteca }
+    image: fonteca:local
+    restart: unless-stopped
+    command: ["serve", "-addr", ":8080", "-proxy-confiavel", "172.30.0.10"]
+    environment:
+      FONTECA_DSN_API: postgres://fonteca_api:${FONTECA_API_SENHA:?rode scripts/instalar}@db:5432/fonteca?sslmode=disable
+    depends_on:
+      db: { condition: service_healthy }
+    # Com healthcheck, "docker compose up --wait" (usado pelo instalador) so
+    # termina quando a API responde de fato, e falha se ela nao subir.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/v1/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks: [interna]
+
+  web:
+    build: { context: ., target: web }
+    image: fonteca-web:local
+    restart: unless-stopped
+    environment:
+      # Vazio ou ausente vira ":80". Nao da para deixar o padrao no Caddyfile:
+      # variavel definida porem vazia deixaria o endereco do site em branco.
+      ENDERECO: ${DOMINIO:-:80}
+    ports:
+      - "${PORTA_HTTP:-8080}:80"
+      - "${PORTA_HTTPS:-8443}:443"
+    volumes:
+      - caddy:/data
+    depends_on:
+      api: { condition: service_healthy }
+    # A API de administracao do Caddy (so no localhost do container) responde
+    # quando a configuracao carregou; com DOMINIO, a porta 80 so redirecionaria.
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:2019/config/"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+    networks:
+      # IP fixo: a API so aceita X-Forwarded-For vindo deste endereco.
+      interna: { ipv4_address: 172.30.0.10 }
+
+  # Comandos de manutencao (migrate, ibge, ingest, conta, export). Roda sob
+  # demanda com "docker compose run --rm cli <comando>" e usa o dono do banco.
+  cli:
+    image: fonteca:local
+    profiles: [ferramentas]
+    environment:
+      FONTECA_DSN: postgres://fonteca:${POSTGRES_PASSWORD}@db:5432/fonteca?sslmode=disable
+    volumes:
+      - lotes:/var/lib/fonteca/lotes
+    depends_on:
+      db: { condition: service_healthy }
+    networks: [interna]
+
+networks:
+  interna:
+    ipam:
+      config:
+        - subnet: 172.30.0.0/24
+
+volumes:
+  banco:
+  lotes:
+  caddy:
