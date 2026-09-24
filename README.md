@@ -170,11 +170,21 @@ pela Receita, sem garantia de que estejam atualizados ou corretos.
 
 ## Apoie
 
-A Fonteca é gratuita e continua gratuita. Se ela economizou seu tempo ou seu
-dinheiro, uma contribuição ajuda a manter o projeto:
+A Fonteca é gratuita e continua gratuita. Ela é mantida pelo **Mago das
+Automações**. Se ela economizou seu tempo ou seu dinheiro, a melhor forma de
+apoiar é conhecer os cursos e acompanhar o conteúdo:
 
-<!-- TODO: chave Pix e/ou endereço Bitcoin -->
-*Em breve.*
+| | |
+|---|---|
+| **Formação Mago das Automações** | [site.magoautomacoes.com.br](https://site.magoautomacoes.com.br) |
+| **The Wizard Academy** | [thewizardacademy.com.br](https://thewizardacademy.com.br) |
+| **Instagram** | [@magoautomacoes](https://www.instagram.com/magoautomacoes/) |
+| **YouTube** | [@wizardacademy_ia](https://www.youtube.com/@wizardacademy_ia) |
+
+Dar uma estrela ⭐ no repositório também ajuda outras pessoas a encontrarem o
+projeto.
+
+<!-- TODO: chave Pix e/ou endereço Bitcoin para doacao direta -->
 
 ## Licença
 
